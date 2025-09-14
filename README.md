@@ -60,3 +60,7 @@ But you'll have to check for new versions of quicksi and update the package.
 ```
 npm update -g quicksi
 ```
+
+
+## Creator
+[Anayo Samson Oleru](https://www.linkedin.com/in/anayooleru/)
