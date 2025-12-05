@@ -513,10 +513,14 @@ function postProcessNode(options: CliOptions) {
 
   let cmd = "";
 
-  if (shell.which("yarn")) {
+  if (fs.existsSync("yarn.lock") && shell.which("yarn")) {
     cmd = "yarn";
+  } else if (fs.existsSync("package-lock.json") && shell.which("npm")) {
+    cmd = "npm install";
+  } else if (shell.which("pnpm") && fs.existsSync("pnpm-lock.yaml")) {
+    cmd = "pnpm install";
   } else if (shell.which("npm")) {
-    cmd = "npm install && npm update";
+    cmd = "npm install";
   }
 
   if (cmd) {
@@ -526,7 +530,7 @@ function postProcessNode(options: CliOptions) {
       return false;
     }
   } else {
-    console.log(chalk.red("No yarn or npm found. Cannot run installation."));
+    console.log(chalk.red("No yarn, npm, or pnpm found. Cannot run installation."));
   }
 
   return true;
