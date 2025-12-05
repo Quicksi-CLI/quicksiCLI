@@ -32,7 +32,7 @@ function HomeSplash(props) {
           </a>
           <span className="index-ctas-github-button">
             <iframe
-              src="https://ghbtns.com/github-btn.html?user=AnayoOleru&amp;repo=quicksi&amp;type=star&amp;count=true&amp;size=large"
+              src="https://ghbtns.com/github-btn.html?user=Quicksi-CLI&amp;repo=quicksi&amp;type=star&amp;count=true&amp;size=large"
               frameBorder={0}
               scrolling={0}
               width={160}

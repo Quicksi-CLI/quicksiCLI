@@ -11,7 +11,7 @@ class Help extends React.Component {
     const supportLinks = [
       {
         title: <translate>Browse the GitHub docs</translate>,
-        content: `Learn more about Quicksi using the [github documentation](https://github.com/AnayoOleru/quicksi)`,
+        content: `Learn more about Quicksi using the [github documentation](https://github.com/Quicksi-CLI/quicksi)`,
       },
       {
         title: <translate>Spectrum</translate>,
@@ -26,7 +26,7 @@ class Help extends React.Component {
       {
         title: <translate>GitHub</translate>,
         content:
-          'At our [GitHub repo](https://github.com/AnayoOleru/quicksi) Browse and submit [issues](https://github.com/AnayoOleru/quicksi/issues) or [pull requests](https://github.com/AnayoOleru/quicksi/pulls) for bugs you find or any new starter you may want implemented. Be sure to also check out our [contributing information](https://github.com/AnayoOleru/quicksi/blob/master/CONTRIBUTING.md).',
+          'At our [GitHub repo](https://github.com/Quicksi-CLI/quicksi) Browse and submit [issues](https://github.com/Quicksi-CLI/quicksi/issues) or [pull requests](https://github.com/Quicksi-CLI/quicksi/pulls) for bugs you find or any new starter you may want implemented. Be sure to also check out our [contributing information](https://github.com/Quicksi-CLI/quicksi/blob/master/CONTRIBUTING.md).',
       },
     ];
 
