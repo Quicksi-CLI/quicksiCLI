@@ -34,6 +34,6 @@
     "dotenv": "^8.2.0",
     "graphql-yoga": "^1.18.3",
     "mongoose": "^5.8.4",
-    "validator": "^12.1.0"
+    "validator": "^13.15.22"
   }
 }
