@@ -324,7 +324,7 @@ const QUESTIONS: Array<Object> = [
     message: "Last but not the least, tell me you project name:",
     when: () => !yargs.argv["name"],
     validate: (input: string) => {
-      if (/^([A-Za-z\-\_\d])+$/.test(input)) return true;
+      if (/^([A-Za-z\-\_\d#])+$/.test(input)) return true;
       else
         return "Project name may only include letters, numbers, underscores and hashes.";
     },
