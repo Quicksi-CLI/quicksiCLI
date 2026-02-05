@@ -33,7 +33,7 @@
     "await-to-js": "^2.1.1",
     "dotenv": "^8.2.0",
     "graphql-yoga": "^1.18.3",
-    "mongoose": "^5.8.4",
+    "mongoose": "^6.13.6",
     "validator": "^13.15.22"
   }
 }
