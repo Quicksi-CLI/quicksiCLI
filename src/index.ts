@@ -5,13 +5,13 @@ import * as inquirer from "inquirer";
 import * as fs from "fs";
 import * as path from "path";
 import * as shell from "shelljs";
-// import * as template from "./utils/template";
 import chalk from "chalk";
-import * as yargs from "yargs";
+import yargs from "yargs";
 import { ensureTemplates, clearTemplateCache } from "./utils/templateFetcher";
 
-const CURR_DIR = process.cwd();
-
+/**
+ * Types
+ */
 interface Answers {
   programmingLanguage: string;
   framework?: string;
@@ -20,146 +20,206 @@ interface Answers {
   name: string;
 }
 
-async function run() {
-  // CLI flags
+/**
+ * Entry Point
+ */
+async function main(): Promise<void> {
+  handleCliFlags();
+
+  const templatesBasePath = await ensureTemplates();
+
+  const answers = await promptUser(templatesBasePath);
+
+  const templatePath = resolveTemplatePath(templatesBasePath, answers);
+
+  const targetPath = createProjectDirectory(answers.name);
+
+  const config = loadTemplateConfig(templatePath);
+
+  copyTemplateFiles(templatePath, targetPath);
+
+  installDependencies(targetPath, templatePath);
+
+  displaySuccessMessage(answers.name, config);
+}
+
+/**
+ * Handle CLI flags
+ */
+function handleCliFlags(): void {
   if (yargs.argv["clear-cache"]) {
     clearTemplateCache();
-    return;
+    process.exit(0);
   }
+}
 
-  // 🔥 Fetch templates
-  const baseTemplates = await ensureTemplates();
+/**
+ * Prompt user interactively
+ */
+async function promptUser(basePath: string): Promise<Answers> {
+  const languages = readDir(basePath);
 
-  // 🔥 Dynamic loading
-  const PROGRAMMING_LANGUAGE = fs.readdirSync(baseTemplates);
-
-  const JAVASCRIPTFRAMEWORK = fs.readdirSync(
-    path.join(baseTemplates, "javascript")
-  );
-  const TYPESCRIPTFRAMEWORK = fs.readdirSync(
-    path.join(baseTemplates, "typescript")
-  );
-  const TUTORIALSTARTER = fs.readdirSync(
-    path.join(baseTemplates, "tutorials")
-  );
-
-  // dynamic helper
-  const getChoices = (lang: string, framework: string) =>
-    fs.readdirSync(path.join(baseTemplates, lang, framework));
-
-  const QUESTIONS: any[] = [
+  const questions: any[] = [
     {
       name: "programmingLanguage",
       type: "list",
-      message:
-        "Hello, I am Quicksi your personal assistant, what starter would you like to choose",
-      choices: PROGRAMMING_LANGUAGE,
+      message: "Select a programming language",
+      choices: languages,
     },
     {
       name: "framework",
       type: "list",
-      message: "Choose a framework",
-      choices: (answers: any) => {
-        if (answers.programmingLanguage === "javascript")
-          return JAVASCRIPTFRAMEWORK;
-        if (answers.programmingLanguage === "typescript")
-          return TYPESCRIPTFRAMEWORK;
-        return [];
-      },
-      when: (answers: any) =>
+      message: "Select a framework",
+      choices: (answers: Answers) =>
+        readDir(path.join(basePath, answers.programmingLanguage)),
+      when: (answers: Answers) =>
         answers.programmingLanguage !== "tutorials",
     },
     {
       name: "starter",
       type: "list",
-      message: "Choose a starter",
-      choices: (answers: any) =>
-        getChoices(answers.programmingLanguage, answers.framework),
-      when: (answers: any) =>
+      message: "Select a starter template",
+      choices: (answers: Answers) =>
+        readDir(
+          path.join(
+            basePath,
+            answers.programmingLanguage,
+            answers.framework!
+          )
+        ),
+      when: (answers: Answers) =>
         answers.programmingLanguage !== "tutorials",
     },
     {
       name: "tutorial",
       type: "list",
-      message: "Choose tutorial starter",
-      choices: TUTORIALSTARTER,
-      when: (answers: any) =>
+      message: "Select a tutorial starter",
+      choices: readDir(path.join(basePath, "tutorials")),
+      when: (answers: Answers) =>
         answers.programmingLanguage === "tutorials",
     },
     {
       name: "name",
       type: "input",
       message: "Project name:",
-      validate: (input: string) =>
-        /^([A-Za-z\-\_\d])+$/.test(input)
-          ? true
-          : "Invalid project name",
+      validate: validateProjectName,
     },
   ];
 
-  // const answers = await inquirer.prompt(QUESTIONS);
-  const answers = (await inquirer.prompt(QUESTIONS)) as Answers;
-
-  let templatePath: string;
-
-  if (answers.programmingLanguage === "tutorials") {
-    if (!answers.tutorial) {
-      throw new Error("Tutorial is required");
-    }
-    templatePath = path.join(
-      baseTemplates,
-      "tutorials",
-      answers.tutorial
-    );
-  } else {
-    if (!answers.framework || !answers.starter) {
-      throw new Error("Framework and starter are required");
-    }
-    templatePath = path.join(
-      baseTemplates,
-      answers.programmingLanguage,
-      answers.framework,
-      answers.starter
-    );
-  }
-
-  const projectName = answers.name;
-  const targetPath = path.join(CURR_DIR, projectName);
-
-  if (!createProject(targetPath)) return;
-
-  const config = getTemplateConfig(templatePath);
-
-  createDirectoryContents(templatePath, projectName);
-
-  postProcess(targetPath, templatePath);
-
-  showMessage(projectName, config);
+  return (await inquirer.prompt(questions)) as Answers;
 }
 
-run();
-
-function showMessage(projectName: string, config: any) {
-  console.log("");
-
-  // figlet("QUICKSI", (_, data) => {
-  //   if (data) {
-  //     console.log(chalk.yellow(data));
-  //   }
-  // });
-  figlet("QUICKSI", (err: Error | null, data: string | undefined) => {
-    if (err) {
-      console.log("Error generating figlet");
-      return;
+/**
+ * Resolve template path
+ */
+function resolveTemplatePath(
+  basePath: string,
+  answers: Answers
+): string {
+  if (answers.programmingLanguage === "tutorials") {
+    if (!answers.tutorial) {
+      throw new Error("Tutorial selection is required");
     }
 
+    return path.join(basePath, "tutorials", answers.tutorial);
+  }
+
+  if (!answers.framework || !answers.starter) {
+    throw new Error("Framework and starter are required");
+  }
+
+  return path.join(
+    basePath,
+    answers.programmingLanguage,
+    answers.framework,
+    answers.starter
+  );
+}
+
+/**
+ * Create project directory
+ */
+function createProjectDirectory(projectName: string): string {
+  const targetPath = path.join(process.cwd(), projectName);
+
+  if (fs.existsSync(targetPath)) {
+    throw new Error(`Directory "${projectName}" already exists`);
+  }
+
+  fs.mkdirSync(targetPath);
+  return targetPath;
+}
+
+/**
+ * Load template config
+ */
+function loadTemplateConfig(templatePath: string): any {
+  const configPath = path.join(templatePath, ".template.json");
+
+  if (!fs.existsSync(configPath)) return {};
+
+  return JSON.parse(fs.readFileSync(configPath, "utf-8"));
+}
+
+/**
+ * Copy template files recursively
+ */
+function copyTemplateFiles(
+  source: string,
+  target: string
+): void {
+  const files = fs.readdirSync(source);
+
+  files.forEach((file) => {
+    if (file === ".template.json") return;
+
+    const sourcePath = path.join(source, file);
+    const targetPath = path.join(target, file);
+
+    if (fs.statSync(sourcePath).isDirectory()) {
+      fs.mkdirSync(targetPath);
+      copyTemplateFiles(sourcePath, targetPath);
+    } else {
+      const content = fs.readFileSync(sourcePath, "utf-8");
+      fs.writeFileSync(targetPath, content);
+    }
+  });
+}
+
+/**
+ * Install dependencies if package.json exists
+ */
+function installDependencies(
+  targetPath: string,
+  templatePath: string
+): void {
+  const packageJsonPath = path.join(templatePath, "package.json");
+
+  if (!fs.existsSync(packageJsonPath)) return;
+
+  console.log("\n📦 Installing dependencies...\n");
+
+  shell.cd(targetPath);
+  shell.exec("npm install");
+}
+
+/**
+ * Display success message
+ */
+function displaySuccessMessage(
+  projectName: string,
+  config: any
+): void {
+  console.log("");
+
+  figlet("QUICKSI", (err: Error | null, data: string | undefined) => {
     if (data) {
-      console.log(data);
+      console.log(chalk.yellow(data));
     }
   });
 
-  console.log(chalk.green(`Project created: ${projectName}`));
-  console.log(chalk.green(`cd ${projectName}`));
+  console.log(chalk.green(`\n✅ Project created: ${projectName}`));
+  console.log(chalk.cyan(`cd ${projectName}`));
   console.log("");
 
   if (config?.postMessage) {
@@ -167,46 +227,23 @@ function showMessage(projectName: string, config: any) {
   }
 }
 
-function getTemplateConfig(templatePath: string) {
-  const configPath = path.join(templatePath, ".template.json");
-  if (!fs.existsSync(configPath)) return {};
-  return JSON.parse(fs.readFileSync(configPath, "utf-8"));
+/**
+ * Utilities
+ */
+function readDir(dirPath: string): string[] {
+  return fs.existsSync(dirPath) ? fs.readdirSync(dirPath) : [];
 }
 
-function createProject(projectPath: string) {
-  if (fs.existsSync(projectPath)) {
-    console.log(chalk.red("Folder already exists"));
-    return false;
-  }
-  fs.mkdirSync(projectPath);
-  return true;
+function validateProjectName(input: string): true | string {
+  return /^([A-Za-z\-_\\d]+)$/.test(input)
+    ? true
+    : "Project name must contain only letters, numbers, dashes or underscores";
 }
 
-function postProcess(targetPath: string, templatePath: string) {
-  if (fs.existsSync(path.join(templatePath, "package.json"))) {
-    shell.cd(targetPath);
-    shell.exec("npm install");
-  }
-}
-
-function createDirectoryContents(
-  templatePath: string,
-  projectName: string
-) {
-  const files = fs.readdirSync(templatePath);
-
-  files.forEach((file) => {
-    if (file === ".template.json") return;
-
-    const orig = path.join(templatePath, file);
-    const dest = path.join(process.cwd(), projectName, file);
-
-    if (fs.statSync(orig).isDirectory()) {
-      fs.mkdirSync(dest);
-      createDirectoryContents(orig, path.join(projectName, file));
-    } else {
-      const content = fs.readFileSync(orig, "utf-8");
-      fs.writeFileSync(dest, content);
-    }
-  });
-}
+/**
+ * Run CLI
+ */
+main().catch((err) => {
+  console.error(chalk.red("\n❌ Error:"), err.message);
+  process.exit(1);
+});
