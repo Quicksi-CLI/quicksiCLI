@@ -10,6 +10,17 @@ import yargs from "yargs";
 import { ensureTemplates, clearTemplateCache } from "./utils/templateFetcher";
 
 /**
+ * CLI Arguments
+ */
+const argv = yargs(process.argv.slice(2))
+  .command("$0 [template] [name]")
+  .option("clear-cache", {
+    type: "boolean",
+    description: "Clear template cache",
+  })
+  .help().argv as any;
+
+/**
  * Types
  */
 interface Answers {
@@ -27,34 +38,45 @@ async function main(): Promise<void> {
   handleCliFlags();
 
   const templatesBasePath = await ensureTemplates();
+  const templateArg = argv.template as string | undefined;
+  const nameArg = argv.name as string | undefined;
 
-  const answers = await promptUser(templatesBasePath);
+  let templatePath: string;
+  let projectName: string;
 
-  const templatePath = resolveTemplatePath(templatesBasePath, answers);
+  if (templateArg) {
+    // 🚀 DIRECT MODE
+    templatePath = resolveTemplateFromArg(templatesBasePath, templateArg);
+    projectName = nameArg || promptProjectNameSync();
+  } else {
+    // 🧠 INTERACTIVE MODE
+    const answers = await promptUser(templatesBasePath);
 
-  const targetPath = createProjectDirectory(answers.name);
+    templatePath = resolveTemplatePath(templatesBasePath, answers);
+    projectName = answers.name;
+  }
 
+  const targetPath = createProjectDirectory(projectName);
   const config = loadTemplateConfig(templatePath);
 
   copyTemplateFiles(templatePath, targetPath);
-
   installDependencies(targetPath, templatePath);
 
-  displaySuccessMessage(answers.name, config);
-}
+  displaySuccessMessage(projectName, config);
+};
 
 /**
  * Handle CLI flags
  */
 function handleCliFlags(): void {
-  if (yargs.argv["clear-cache"]) {
+  if (argv["clear-cache"]) {
     clearTemplateCache();
     process.exit(0);
   }
-}
+};
 
 /**
- * Prompt user interactively
+ * Prompt user (interactive mode)
  */
 async function promptUser(basePath: string): Promise<Answers> {
   const languages = readDir(basePath);
@@ -107,10 +129,34 @@ async function promptUser(basePath: string): Promise<Answers> {
   ];
 
   return (await inquirer.prompt(questions)) as Answers;
-}
+};
 
 /**
- * Resolve template path
+ * Resolve template from CLI argument
+ * Format: language/framework/starter
+ */
+function resolveTemplateFromArg(basePath: string, input: string): string {
+  const parts = input.split("/");
+
+  if (parts.length < 3) {
+    throw new Error(
+      `Invalid template format.\n\nExpected:\nquicksi <language/framework/starter> <project-name>\n\nExample:\nquicksi typescript/node-ts/auth-starter my-app`
+    );
+  };
+
+  const [language, framework, starter] = parts;
+
+  const fullPath = path.join(basePath, language, framework, starter);
+
+  if (!fs.existsSync(fullPath)) {
+    throw new Error(`Template not found: ${input}`);
+  };
+
+  return fullPath;
+};
+
+/**
+ * Resolve template from interactive answers
  */
 function resolveTemplatePath(
   basePath: string,
@@ -162,12 +208,9 @@ function loadTemplateConfig(templatePath: string): any {
 }
 
 /**
- * Copy template files recursively
+ * Copy template files
  */
-function copyTemplateFiles(
-  source: string,
-  target: string
-): void {
+function copyTemplateFiles(source: string, target: string): void {
   const files = fs.readdirSync(source);
 
   files.forEach((file) => {
@@ -187,7 +230,7 @@ function copyTemplateFiles(
 }
 
 /**
- * Install dependencies if package.json exists
+ * Install dependencies
  */
 function installDependencies(
   targetPath: string,
@@ -201,7 +244,7 @@ function installDependencies(
 
   shell.cd(targetPath);
   shell.exec("npm install");
-}
+};
 
 /**
  * Display success message
@@ -225,7 +268,7 @@ function displaySuccessMessage(
   if (config?.postMessage) {
     console.log(chalk.yellow(config.postMessage));
   }
-}
+};
 
 /**
  * Utilities
@@ -238,6 +281,19 @@ function validateProjectName(input: string): true | string {
   return /^([A-Za-z\-_\\d]+)$/.test(input)
     ? true
     : "Project name must contain only letters, numbers, dashes or underscores";
+};
+
+/**
+ * Fallback prompt for project name (sync alternative)
+ */
+function promptProjectNameSync(): string {
+  const name = process.argv[3];
+
+  if (!name) {
+    throw new Error("Project name is required");
+  }
+
+  return name;
 }
 
 /**
