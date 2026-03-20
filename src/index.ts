@@ -81,13 +81,16 @@ async function main(): Promise<void> {
     projectName = answers.name;
   }
 
+  // 🔥 LOAD META (NEW)
+  const meta = loadTemplateMeta(templatePath);
+
   const targetPath = createProjectDirectory(projectName);
   const config = loadTemplateConfig(templatePath);
 
   copyTemplateFiles(templatePath, targetPath);
   installDependencies(targetPath, templatePath);
 
-  displaySuccessMessage(projectName, config);
+  displaySuccessMessage(projectName, config, meta);
 }
 
 /**
@@ -98,7 +101,7 @@ function handleCliFlags(): void {
     clearTemplateCache();
     process.exit(0);
   }
-};
+}
 
 /**
  * Interactive prompt
@@ -154,10 +157,10 @@ async function promptUser(basePath: string): Promise<Answers> {
   ];
 
   return (await inquirer.prompt(questions)) as Answers;
-};
+}
 
 /**
- * Resolve template from full path input
+ * Resolve template from full path
  */
 function resolveTemplateFromArg(
   basePath: string,
@@ -180,7 +183,7 @@ function resolveTemplateFromArg(
   }
 
   return fullPath;
-};
+}
 
 /**
  * Resolve template (interactive)
@@ -203,7 +206,22 @@ function resolveTemplatePath(
     answers.framework!,
     answers.starter!
   );
-};
+}
+
+/**
+ * 🔥 Load template meta
+ */
+function loadTemplateMeta(templatePath: string): any {
+  const metaPath = path.join(templatePath, ".meta.json");
+
+  if (!fs.existsSync(metaPath)) return null;
+
+  try {
+    return JSON.parse(fs.readFileSync(metaPath, "utf-8"));
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Create project directory
@@ -217,7 +235,7 @@ function createProjectDirectory(projectName: string): string {
 
   fs.mkdirSync(target);
   return target;
-};
+}
 
 /**
  * Load template config
@@ -228,7 +246,7 @@ function loadTemplateConfig(templatePath: string): any {
   if (!fs.existsSync(configPath)) return {};
 
   return JSON.parse(fs.readFileSync(configPath, "utf-8"));
-};
+}
 
 /**
  * Copy files
@@ -237,7 +255,7 @@ function copyTemplateFiles(source: string, target: string): void {
   const files = fs.readdirSync(source);
 
   files.forEach((file) => {
-    if (file === ".template.json") return;
+    if (file === ".template.json" || file === ".meta.json") return;
 
     const src = path.join(source, file);
     const dest = path.join(target, file);
@@ -249,7 +267,7 @@ function copyTemplateFiles(source: string, target: string): void {
       fs.writeFileSync(dest, fs.readFileSync(src, "utf-8"));
     }
   });
-};
+}
 
 /**
  * Install dependencies
@@ -268,24 +286,49 @@ function installDependencies(
 }
 
 /**
- * Success output
+ * 🔥 Success output (WITH AUTHOR)
  */
 function displaySuccessMessage(
   projectName: string,
-  config: any
+  config: any,
+  meta?: any
 ): void {
   console.log("");
 
-  figlet("QUICKSI", (_, data) => {
+  figlet("QUICKSI CLI", (_, data) => {
     if (data) console.log(chalk.yellow(data));
   });
 
   console.log(chalk.green(`\n✅ Project created: ${projectName}`));
   console.log(chalk.cyan(`cd ${projectName}`));
 
+  // 🔥 Template info
+  if (meta?.name) {
+    console.log(chalk.blue(`📦 Template: ${meta.name}`));
+  }
+
+  // 🔥 Author info
+  if (meta?.author?.name) {
+    console.log("");
+    console.log(
+      chalk.magenta(`👤 Template contributed by ${meta.author.name}`)
+    );
+
+    if (meta.author.github_username) {
+      console.log(
+        chalk.gray(
+          `🔗 https://github.com/${meta.author.github_username}`
+        )
+      );
+    }
+  }
+
   if (config?.postMessage) {
+    console.log("");
     console.log(chalk.yellow(config.postMessage));
   }
+
+  console.log("");
 }
 
 /**
