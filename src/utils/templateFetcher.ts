@@ -60,11 +60,24 @@ async function download(url: string): Promise<Buffer> {
  * Ensure templates exist locally (download if missing)
  */
 export async function ensureTemplates(version?: string): Promise<string> {
-    const templatesPath = resolveTemplatesPath(CACHE_DIR);
-
-    if (fs.existsSync(templatesPath)) {
-        return templatesPath;
+    // ✅ Step 1: check if cache exists first
+    if (fs.existsSync(CACHE_DIR)) {
+        try {
+            const templatesPath = resolveTemplatesPath(CACHE_DIR);
+            return templatesPath;
+        } catch {
+            // ⚠️ cache exists but is broken → clear it
+            fs.rmSync(CACHE_DIR, { recursive: true, force: true });
+        }
     }
+
+
+
+    // const templatesPath = resolveTemplatesPath(CACHE_DIR);
+
+    // if (fs.existsSync(templatesPath)) {
+    //     return templatesPath;
+    // }
 
     console.log("📦 Downloading templates...");
 
@@ -131,10 +144,17 @@ function resolveTemplatesPath(cacheDir: string): string {
         throw new Error("No templates found in cache");
     }
 
-    const rootFolder = folders[0];
+    // 🔥 find the extracted repo folder
+    const rootFolder = folders.find((f) =>
+        f.includes("quicksi-templates")
+    );
+
+    if (!rootFolder) {
+        throw new Error("Invalid template structure");
+    };
 
     return path.join(cacheDir, rootFolder, "templates");
-}
+};
 
 /**
  * Clear local template cache

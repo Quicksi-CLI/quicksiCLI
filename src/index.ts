@@ -7,7 +7,15 @@ import * as path from "path";
 import * as shell from "shelljs";
 import chalk from "chalk";
 import yargs from "yargs";
-import { ensureTemplates, clearTemplateCache } from "./utils/templateFetcher";
+
+import {
+  ensureTemplates,
+  clearTemplateCache,
+} from "./utils/templateFetcher";
+
+import {
+  resolveTemplateById,
+} from "./utils/templateIndex";
 
 /**
  * CLI Arguments
@@ -38,6 +46,7 @@ async function main(): Promise<void> {
   handleCliFlags();
 
   const templatesBasePath = await ensureTemplates();
+
   const templateArg = argv.template as string | undefined;
   const nameArg = argv.name as string | undefined;
 
@@ -45,14 +54,30 @@ async function main(): Promise<void> {
   let projectName: string;
 
   if (templateArg) {
-    // 🚀 DIRECT MODE
-    templatePath = resolveTemplateFromArg(templatesBasePath, templateArg);
-    projectName = nameArg || promptProjectNameSync();
+    // 🔥 DIRECT MODE
+
+    if (templateArg.includes("/")) {
+      templatePath = resolveTemplateFromArg(
+        templatesBasePath,
+        templateArg
+      );
+    } else {
+      templatePath = resolveTemplateById(
+        templatesBasePath,
+        templateArg
+      );
+    }
+
+    projectName = nameArg || throwProjectNameError();
   } else {
     // 🧠 INTERACTIVE MODE
     const answers = await promptUser(templatesBasePath);
 
-    templatePath = resolveTemplatePath(templatesBasePath, answers);
+    templatePath = resolveTemplatePath(
+      templatesBasePath,
+      answers
+    );
+
     projectName = answers.name;
   }
 
@@ -63,7 +88,7 @@ async function main(): Promise<void> {
   installDependencies(targetPath, templatePath);
 
   displaySuccessMessage(projectName, config);
-};
+}
 
 /**
  * Handle CLI flags
@@ -76,7 +101,7 @@ function handleCliFlags(): void {
 };
 
 /**
- * Prompt user (interactive mode)
+ * Interactive prompt
  */
 async function promptUser(basePath: string): Promise<Answers> {
   const languages = readDir(basePath);
@@ -132,69 +157,67 @@ async function promptUser(basePath: string): Promise<Answers> {
 };
 
 /**
- * Resolve template from CLI argument
- * Format: language/framework/starter
+ * Resolve template from full path input
  */
-function resolveTemplateFromArg(basePath: string, input: string): string {
+function resolveTemplateFromArg(
+  basePath: string,
+  input: string
+): string {
   const parts = input.split("/");
 
   if (parts.length < 3) {
     throw new Error(
-      `Invalid template format.\n\nExpected:\nquicksi <language/framework/starter> <project-name>\n\nExample:\nquicksi typescript/node-ts/auth-starter my-app`
+      `Invalid format.\nUse:\nquicksi language/framework/starter app-name`
     );
-  };
+  }
 
-  const [language, framework, starter] = parts;
+  const [lang, framework, starter] = parts;
 
-  const fullPath = path.join(basePath, language, framework, starter);
+  const fullPath = path.join(basePath, lang, framework, starter);
 
   if (!fs.existsSync(fullPath)) {
     throw new Error(`Template not found: ${input}`);
-  };
+  }
 
   return fullPath;
 };
 
 /**
- * Resolve template from interactive answers
+ * Resolve template (interactive)
  */
 function resolveTemplatePath(
   basePath: string,
   answers: Answers
 ): string {
   if (answers.programmingLanguage === "tutorials") {
-    if (!answers.tutorial) {
-      throw new Error("Tutorial selection is required");
-    }
-
-    return path.join(basePath, "tutorials", answers.tutorial);
-  }
-
-  if (!answers.framework || !answers.starter) {
-    throw new Error("Framework and starter are required");
+    return path.join(
+      basePath,
+      "tutorials",
+      answers.tutorial!
+    );
   }
 
   return path.join(
     basePath,
     answers.programmingLanguage,
-    answers.framework,
-    answers.starter
+    answers.framework!,
+    answers.starter!
   );
-}
+};
 
 /**
  * Create project directory
  */
 function createProjectDirectory(projectName: string): string {
-  const targetPath = path.join(process.cwd(), projectName);
+  const target = path.join(process.cwd(), projectName);
 
-  if (fs.existsSync(targetPath)) {
+  if (fs.existsSync(target)) {
     throw new Error(`Directory "${projectName}" already exists`);
   }
 
-  fs.mkdirSync(targetPath);
-  return targetPath;
-}
+  fs.mkdirSync(target);
+  return target;
+};
 
 /**
  * Load template config
@@ -205,10 +228,10 @@ function loadTemplateConfig(templatePath: string): any {
   if (!fs.existsSync(configPath)) return {};
 
   return JSON.parse(fs.readFileSync(configPath, "utf-8"));
-}
+};
 
 /**
- * Copy template files
+ * Copy files
  */
 function copyTemplateFiles(source: string, target: string): void {
   const files = fs.readdirSync(source);
@@ -216,38 +239,36 @@ function copyTemplateFiles(source: string, target: string): void {
   files.forEach((file) => {
     if (file === ".template.json") return;
 
-    const sourcePath = path.join(source, file);
-    const targetPath = path.join(target, file);
+    const src = path.join(source, file);
+    const dest = path.join(target, file);
 
-    if (fs.statSync(sourcePath).isDirectory()) {
-      fs.mkdirSync(targetPath);
-      copyTemplateFiles(sourcePath, targetPath);
+    if (fs.statSync(src).isDirectory()) {
+      fs.mkdirSync(dest);
+      copyTemplateFiles(src, dest);
     } else {
-      const content = fs.readFileSync(sourcePath, "utf-8");
-      fs.writeFileSync(targetPath, content);
+      fs.writeFileSync(dest, fs.readFileSync(src, "utf-8"));
     }
   });
-}
+};
 
 /**
  * Install dependencies
  */
 function installDependencies(
-  targetPath: string,
+  target: string,
   templatePath: string
 ): void {
-  const packageJsonPath = path.join(templatePath, "package.json");
-
-  if (!fs.existsSync(packageJsonPath)) return;
+  if (!fs.existsSync(path.join(templatePath, "package.json")))
+    return;
 
   console.log("\n📦 Installing dependencies...\n");
 
-  shell.cd(targetPath);
+  shell.cd(target);
   shell.exec("npm install");
-};
+}
 
 /**
- * Display success message
+ * Success output
  */
 function displaySuccessMessage(
   projectName: string,
@@ -255,45 +276,33 @@ function displaySuccessMessage(
 ): void {
   console.log("");
 
-  figlet("QUICKSI", (err: Error | null, data: string | undefined) => {
-    if (data) {
-      console.log(chalk.yellow(data));
-    }
+  figlet("QUICKSI", (_, data) => {
+    if (data) console.log(chalk.yellow(data));
   });
 
   console.log(chalk.green(`\n✅ Project created: ${projectName}`));
   console.log(chalk.cyan(`cd ${projectName}`));
-  console.log("");
 
   if (config?.postMessage) {
     console.log(chalk.yellow(config.postMessage));
   }
-};
+}
 
 /**
  * Utilities
  */
-function readDir(dirPath: string): string[] {
-  return fs.existsSync(dirPath) ? fs.readdirSync(dirPath) : [];
+function readDir(dir: string): string[] {
+  return fs.existsSync(dir) ? fs.readdirSync(dir) : [];
 }
 
 function validateProjectName(input: string): true | string {
   return /^([A-Za-z\-_\\d]+)$/.test(input)
     ? true
-    : "Project name must contain only letters, numbers, dashes or underscores";
-};
+    : "Invalid project name";
+}
 
-/**
- * Fallback prompt for project name (sync alternative)
- */
-function promptProjectNameSync(): string {
-  const name = process.argv[3];
-
-  if (!name) {
-    throw new Error("Project name is required");
-  }
-
-  return name;
+function throwProjectNameError(): never {
+  throw new Error("Project name is required");
 }
 
 /**
