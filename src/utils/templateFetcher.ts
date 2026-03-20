@@ -1,43 +1,59 @@
-// src/types/adm-zip.d.ts
-declare module "adm-zip";
-
 import * as https from "https";
-import AdmZip from "adm-zip";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
+import AdmZip from "adm-zip";
 
-const TEMPLATE_REPO_ZIP =
-    "https://github.com/Quicksi-CLI/quicksi-templates/archive/refs/heads/main.zip";
-
-//   version pinning
-//   const TEMPLATE_URL = version
-//   ? `.../refs/tags/${version}.zip`
-//   : `.../refs/heads/main.zip`;
-
+/**
+ * Configuration
+ */
+const TEMPLATE_REPO = "https://github.com/Quicksi-CLI/quicksi-templates";
+const DEFAULT_BRANCH = "main";
 const CACHE_DIR = path.join(os.homedir(), ".quicksi");
 
-function download(url: string): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      // 🔥 HANDLE REDIRECT
-      if (
-        res.statusCode &&
-        res.statusCode >= 300 &&
-        res.statusCode < 400 &&
-        res.headers.location
-      ) {
-        return resolve(download(res.headers.location));
-      }
+/**
+ * Build template download URL
+ */
+function buildTemplateUrl(version?: string): string {
+    return version
+        ? `${TEMPLATE_REPO}/archive/refs/tags/${version}.zip`
+        : `${TEMPLATE_REPO}/archive/refs/heads/${DEFAULT_BRANCH}.zip`;
+};
 
-      const data: Uint8Array[] = [];
+/**
+ * Download file as buffer (handles redirects)
+ */
 
-      res.on("data", (chunk) => data.push(chunk));
-      res.on("end", () => resolve(Buffer.concat(data)));
-      res.on("error", reject);
-    }).on("error", reject);
-  });
-}
+async function download(url: string): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        https
+            .get(url, (res) => {
+                // Handle HTTP redirects
+                if (
+                    res.statusCode &&
+                    res.statusCode >= 300 &&
+                    res.statusCode < 400 &&
+                    res.headers.location
+                ) {
+                    return resolve(download(res.headers.location));
+                }
+
+                // Validate response
+                if (res.statusCode !== 200) {
+                    return reject(
+                        new Error(`Download failed with status code ${res.statusCode}`)
+                    );
+                }
+
+                const chunks: Uint8Array[] = [];
+
+                res.on("data", (chunk) => chunks.push(chunk));
+                res.on("end", () => resolve(Buffer.concat(chunks)));
+                res.on("error", reject);
+            })
+            .on("error", reject);
+    });
+};
 
 
 export async function ensureTemplates(): Promise<string> {
