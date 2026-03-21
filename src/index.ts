@@ -111,20 +111,6 @@ async function main(): Promise<void> {
   process.exit(0);
 };
 
-
-main().catch(async (err) => {
-  // 🔍 Track unexpected CLI failure for debugging and product improvement
-  // This helps us understand common errors without collecting personal data
-  trackEvent("cli_error", { message: err.message });
-
-  // 🚀 Ensure all pending analytics events are sent before the process exits
-  // CLI processes are short-lived, so without this, events may be lost
-  await shutdownAnalytics();
-
-  // ❌ Exit with failure code to indicate the command did not complete successfully
-  process.exit(1);
-});
-
 /**
  * Handle CLI flags
  */
@@ -383,7 +369,17 @@ function throwProjectNameError(): never {
 /**
  * Run CLI
  */
-main().catch((err) => {
+main().catch(async (err) => {
+  // 🔍 Track unexpected CLI failure for debugging and product improvement
+  // This helps us understand common errors without collecting personal data
+  trackEvent("cli_error", { message: err.message });
+  
+  // 🚀 Ensure all pending analytics events are sent before the process exits
+  // CLI processes are short-lived, so without this, events may be lost
+  await shutdownAnalytics();
+  
   console.error(chalk.red("\n❌ Error:"), err.message);
+
+  // ❌ Exit with failure code to indicate the command did not complete successfully
   process.exit(1);
 });
