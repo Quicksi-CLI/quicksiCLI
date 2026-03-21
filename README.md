@@ -69,4 +69,4 @@ lang → framework → starter
 It does NOT recursively scan folders.
 
 ## Creator
-[Anayo Samson Oleru](https://www.linkedin.com/in/anayooleru/)
+[Anayo Samson Oleru](https://github.com/AnayoOleru)

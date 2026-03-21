@@ -18,6 +18,7 @@ import {
 } from "./utils/templateIndex";
 
 import { trackEvent, shutdownAnalytics } from "./utils/analytics";
+
 /**
  * CLI Arguments
  */
@@ -41,41 +42,52 @@ interface Answers {
 }
 
 /**
+ * Parse template@version
+ */
+function parseTemplateArg(input: string): {
+  template: string;
+  version?: string;
+} {
+  const [template, version] = input.split("@");
+  return { template, version };
+}
+
+/**
  * Entry Point
  */
 async function main(): Promise<void> {
-  // 🚀 Track CLI start event
-  // Used to measure total CLI runs and usage frequency
   trackEvent("cli_started");
 
   handleCliFlags();
-
-  const templatesBasePath = await ensureTemplates();
 
   const templateArg = argv.template as string | undefined;
   const nameArg = argv.name as string | undefined;
 
   let templatePath: string;
   let projectName: string;
+  let templatesBasePath: string;
 
   if (templateArg) {
-    // 🔥 DIRECT MODE
+    const parsed = parseTemplateArg(templateArg);
 
-    if (templateArg.includes("/")) {
+    templatesBasePath = await ensureTemplates(parsed.version);
+
+    if (parsed.template.includes("/")) {
       templatePath = resolveTemplateFromArg(
         templatesBasePath,
-        templateArg
+        parsed.template
       );
     } else {
       templatePath = resolveTemplateById(
         templatesBasePath,
-        templateArg
+        parsed.template
       );
     }
 
     projectName = nameArg || throwProjectNameError();
   } else {
-    // 🧠 INTERACTIVE MODE
+    templatesBasePath = await ensureTemplates();
+
     const answers = await promptUser(templatesBasePath);
 
     templatePath = resolveTemplatePath(
@@ -86,7 +98,6 @@ async function main(): Promise<void> {
     projectName = answers.name;
   }
 
-  // 🔥 LOAD META (NEW)
   const meta = loadTemplateMeta(templatePath);
 
   const targetPath = createProjectDirectory(projectName);
@@ -97,10 +108,6 @@ async function main(): Promise<void> {
 
   displaySuccessMessage(projectName, config, meta);
 
-  // 📊 Track an analytics event (non-blocking)
-  // This sends anonymous usage data to help improve Quicksi
-  // - No personal or sensitive data is collected
-  // - Failures here should never affect CLI execution
   trackEvent("template_used", {
     template_id: meta?.id,
     template_name: meta?.name,
@@ -109,7 +116,7 @@ async function main(): Promise<void> {
   await shutdownAnalytics();
 
   process.exit(0);
-};
+}
 
 /**
  * Handle CLI flags
@@ -211,11 +218,7 @@ function resolveTemplatePath(
   answers: Answers
 ): string {
   if (answers.programmingLanguage === "tutorials") {
-    return path.join(
-      basePath,
-      "tutorials",
-      answers.tutorial!
-    );
+    return path.join(basePath, "tutorials", answers.tutorial!);
   }
 
   return path.join(
@@ -227,7 +230,7 @@ function resolveTemplatePath(
 }
 
 /**
- * 🔥 Load template meta
+ * Load template meta
  */
 function loadTemplateMeta(templatePath: string): any {
   const metaPath = path.join(templatePath, ".meta.json");
@@ -304,7 +307,7 @@ function installDependencies(
 }
 
 /**
- * 🔥 Success output (WITH AUTHOR)
+ * Success output
  */
 function displaySuccessMessage(
   projectName: string,
@@ -313,19 +316,16 @@ function displaySuccessMessage(
 ): void {
   console.log("");
 
-  figlet("QUICKSI CLI", (_, data) => {
-    if (data) console.log(chalk.yellow(data));
-  });
+  const banner = figlet.textSync("QUICKSI CLI");
+  console.log(chalk.yellow(banner));
 
   console.log(chalk.green(`\n✅ Project created: ${projectName}`));
   console.log(chalk.cyan(`cd ${projectName}`));
 
-  // 🔥 Template info
   if (meta?.name) {
     console.log(chalk.blue(`📦 Template: ${meta.name}`));
   }
 
-  // 🔥 Author info
   if (meta?.author?.name) {
     console.log("");
     console.log(
@@ -370,16 +370,11 @@ function throwProjectNameError(): never {
  * Run CLI
  */
 main().catch(async (err) => {
-  // 🔍 Track unexpected CLI failure for debugging and product improvement
-  // This helps us understand common errors without collecting personal data
   trackEvent("cli_error", { message: err.message });
-  
-  // 🚀 Ensure all pending analytics events are sent before the process exits
-  // CLI processes are short-lived, so without this, events may be lost
+
   await shutdownAnalytics();
-  
+
   console.error(chalk.red("\n❌ Error:"), err.message);
 
-  // ❌ Exit with failure code to indicate the command did not complete successfully
   process.exit(1);
 });
