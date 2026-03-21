@@ -17,6 +17,7 @@ import {
   resolveTemplateById,
 } from "./utils/templateIndex";
 
+import { trackEvent, shutdownAnalytics } from "./utils/analytics";
 /**
  * CLI Arguments
  */
@@ -43,6 +44,7 @@ interface Answers {
  * Entry Point
  */
 async function main(): Promise<void> {
+  trackEvent("cli_started");
   handleCliFlags();
 
   const templatesBasePath = await ensureTemplates();
@@ -91,6 +93,20 @@ async function main(): Promise<void> {
   installDependencies(targetPath, templatePath);
 
   displaySuccessMessage(projectName, config, meta);
+
+  trackEvent("template_used", {
+    template_id: meta?.id,
+    template_name: meta?.name,
+  });
+
+  await shutdownAnalytics();
+
+  main().catch(async (err) => {
+    trackEvent("cli_error", { message: err.message });
+
+    await shutdownAnalytics(); // 🔥 ALSO HERE
+    process.exit(1);
+  });
 }
 
 /**

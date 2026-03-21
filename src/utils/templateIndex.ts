@@ -37,7 +37,6 @@ export function buildTemplateIndex(basePath: string): Record<string, TemplateMet
           const meta = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
 
           if (!meta.id) {
-            console.warn(`⚠️ Missing id in ${metaPath}`);
             return;
           }
 
