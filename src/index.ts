@@ -44,7 +44,10 @@ interface Answers {
  * Entry Point
  */
 async function main(): Promise<void> {
+  // 🚀 Track CLI start event
+  // Used to measure total CLI runs and usage frequency
   trackEvent("cli_started");
+
   handleCliFlags();
 
   const templatesBasePath = await ensureTemplates();
@@ -94,6 +97,10 @@ async function main(): Promise<void> {
 
   displaySuccessMessage(projectName, config, meta);
 
+  // 📊 Track an analytics event (non-blocking)
+  // This sends anonymous usage data to help improve Quicksi
+  // - No personal or sensitive data is collected
+  // - Failures here should never affect CLI execution
   trackEvent("template_used", {
     template_id: meta?.id,
     template_name: meta?.name,
@@ -101,13 +108,22 @@ async function main(): Promise<void> {
 
   await shutdownAnalytics();
 
-  main().catch(async (err) => {
-    trackEvent("cli_error", { message: err.message });
+  process.exit(0);
+};
 
-    await shutdownAnalytics(); // 🔥 ALSO HERE
-    process.exit(1);
-  });
-}
+
+main().catch(async (err) => {
+  // 🔍 Track unexpected CLI failure for debugging and product improvement
+  // This helps us understand common errors without collecting personal data
+  trackEvent("cli_error", { message: err.message });
+
+  // 🚀 Ensure all pending analytics events are sent before the process exits
+  // CLI processes are short-lived, so without this, events may be lost
+  await shutdownAnalytics();
+
+  // ❌ Exit with failure code to indicate the command did not complete successfully
+  process.exit(1);
+});
 
 /**
  * Handle CLI flags
