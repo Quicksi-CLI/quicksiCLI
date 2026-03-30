@@ -4,8 +4,6 @@
   </a>
 </p>
 
-<h1 align="center">Quicksi</h1>
-
 <p align="center">
   <a href="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/build.yml">
     <img src="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/build.yml/badge.svg">
@@ -24,8 +22,6 @@
   </a>
   <br>
 </p>
-
-<h1 align="center">⚡ Quicksi</h1>
 
 <p align="center">
   Cross-platform CLI for reusable, versioned project starters.
@@ -70,9 +66,9 @@ You can search and find project templates on the [Quicksi Website](https://quick
 ## Building & Documentation
 
 > [!NOTE]
-> The default `master` branch is the dev branch, please use with caution. For the latest stable version, checkout the [latest release](https://github.com/filecoin-project/lotus/blob/master/LOTUS_RELEASE_FLOW.md#why-is-the-releases-branch-deprecated-and-what-are-alternatives).
+> The default `master` branch is the main branch, please use with caution.
 
-For complete instructions on how to build, install and setup lotus, please visit [https://lotus.filecoin.io](https://lotus.filecoin.io/lotus/install/prerequisites/#supported-platforms). Basic build instructions can be found further down in this readme.
+For complete instructions on how to build, install and setup Quicksi, please visit [https://quicksi.io](https://quicksi.io/contributing). Basic build instructions can be found further down in this readme.
 
 ## Reporting a Vulnerability
 
@@ -80,7 +76,7 @@ Please raise an issue on [Quicksi Github issue](https://github.com/Quicksi-CLI/q
 
 ## Contributing
 
-We welcome contributions to Lotus! Please see our [Contributing Guide](CONTRIBUTING.md) for more details on how to get started.
+We welcome contributions to Quicksi! Please see our [Contributing Guide](CONTRIBUTING.md) for more details on how to get started.
 
 
 ## Quicksi vs AI (Copilot)
