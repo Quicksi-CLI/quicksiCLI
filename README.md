@@ -68,7 +68,7 @@ You can search and find project templates on the [Quicksi Website](https://quick
 > [!NOTE]
 > The default `master` branch is the main branch, please use with caution.
 
-For complete instructions on how to build, install and setup Quicksi, please visit [https://quicksi.io](https://quicksi.io/contributing). Basic build instructions can be found further down in this readme.
+For complete instructions on how to build, install and setup Quicksi, please visit [https://quicksi.io](https://quicksi.io/documentation). Basic build instructions can be found further down in this readme.
 
 ## Reporting a Vulnerability
 
