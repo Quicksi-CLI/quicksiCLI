@@ -18,7 +18,8 @@
       "node18-win-x64",
       "node18-macos-x64",
       "node18-linux-x64"
-    ]
+    ],
+    "outputPath": "build"
   },
   "license": "MIT",
   "devDependencies": {
@@ -28,6 +29,7 @@
     "@types/node": "^25.5.0",
     "@types/shelljs": "^0.8.0",
     "@types/yargs": "^11.1.1",
+    "pkg": "^5.8.1",
     "shx": "^0.3.2",
     "ts-node": "^7.0.1",
     "typescript": "^5.9.3",
