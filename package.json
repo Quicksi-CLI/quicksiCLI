@@ -5,7 +5,9 @@
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "build": "tsc && pkg .",
-    "generate:number": "./src/randomNum.ts"
+    "generate:number": "./src/randomNum.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "bin": "dist/index.js",
   "pkg": {
@@ -28,7 +30,8 @@
     "@types/yargs": "^11.1.1",
     "shx": "^0.3.2",
     "ts-node": "^7.0.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
   },
   "dependencies": {
     "@types/figlet": "^1.2.0",

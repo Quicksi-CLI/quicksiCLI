@@ -1,5 +1,31 @@
 #!/usr/bin/env node
 
+/**
+ * 🚀 Quicksi CLI Entry Point
+ *
+ * This is the main executable for the Quicksi CLI.
+ * It handles:
+ * - CLI argument parsing
+ * - Template resolution (local + remote)
+ * - Interactive prompts
+ * - Project scaffolding
+ * - Dependency installation
+ * - Analytics tracking
+ *
+ * 📦 Responsibilities:
+ * 1. Parse user input (CLI args or interactive mode)
+ * 2. Resolve correct template (by ID or path)
+ * 3. Download/cache templates (version-aware)
+ * 4. Generate project structure
+ * 5. Install dependencies
+ * 6. Provide user feedback
+ *
+ * 🔐 Design Principles:
+ * - Fail gracefully (never crash unexpectedly)
+ * - Keep UX simple and intuitive
+ * - Support both beginner (interactive) and advanced (CLI args) usage
+ */
+
 import figlet from "figlet";
 import * as inquirer from "inquirer";
 import * as fs from "fs";
@@ -23,7 +49,14 @@ import { trackEvent, shutdownAnalytics, sendDownloadEvent } from "./utils/analyt
 import { getLatestVersion } from "./utils/getLatestVersion";
 
 /**
- * CLI Arguments
+ * 🧾 CLI Argument Configuration
+ *
+ * Supported usage:
+ * - quicksi <template> <name>
+ * - quicksi (interactive mode)
+ *
+ * Options:
+ * --clear-cache → clears locally cached templates
  */
 const argv = yargs(process.argv.slice(2))
   .command("$0 [template] [name]")
@@ -34,7 +67,7 @@ const argv = yargs(process.argv.slice(2))
   .help().argv as any;
 
 /**
- * Types
+ * 🧩 Interactive Prompt Answers
  */
 interface Answers {
   programmingLanguage: string;
@@ -45,7 +78,14 @@ interface Answers {
 }
 
 /**
- * Parse template@version
+ * 🔍 Parse Template Argument
+ *
+ * Supports versioned templates:
+ * Example:
+ * - react@1.0.0
+ * - react@v1.0.0
+ *
+ * @param input - Raw CLI template argument
  */
 function parseTemplateArg(input: string): {
   template: string;
@@ -56,7 +96,7 @@ function parseTemplateArg(input: string): {
 }
 
 /**
- * Entry Point
+ * 🧠 Main CLI Execution Flow
  */
 async function main(): Promise<void> {
   trackEvent("cli_started");
@@ -71,22 +111,34 @@ async function main(): Promise<void> {
   let templatesBasePath: string;
   let globalVersion: string = "main";
 
+  /**
+   * ⚡ Non-interactive mode (CLI arguments provided)
+   */
   if (templateArg) {
     const parsed = parseTemplateArg(templateArg);
 
-    // 🔥 VERSION RESOLUTION (NEW)
+    /**
+     * 🔄 Version resolution
+     * - Use provided version OR
+     * - Fetch latest version dynamically
+     */
     let versionToUse = parsed.version;
 
     if (!versionToUse) {
       versionToUse = await getLatestVersion();
-    };
+    }
 
-    globalVersion = versionToUse
+    globalVersion = versionToUse;
 
     console.log(chalk.gray(`📌 Using version: ${versionToUse}`));
 
     templatesBasePath = await ensureTemplates(versionToUse);
 
+    /**
+     * Resolve template:
+     * - Full path (language/framework/starter)
+     * - OR template ID
+     */
     if (parsed.template.includes("/")) {
       templatePath = resolveTemplateFromArg(
         templatesBasePath,
@@ -101,8 +153,9 @@ async function main(): Promise<void> {
 
     projectName = nameArg || throwProjectNameError();
   } else {
-
-    // 🔥 also apply VERSION logic here
+    /**
+     * 🎯 Interactive mode
+     */
     const versionToUse = await getLatestVersion();
 
     console.log(chalk.gray(`📌 Using version: ${versionToUse}`));
@@ -119,10 +172,14 @@ async function main(): Promise<void> {
     projectName = answers.name;
   }
 
-  // const meta = loadTemplateMeta(templatePath);
+  /**
+   * 📦 Load template metadata
+   */
   const meta = loadTemplateMeta(templatePath);
 
-  // 🔥 ENRICH AUTHOR FROM author_id
+  /**
+   * 👤 Enrich author info dynamically (via author_id)
+   */
   if (meta?.author_id) {
     try {
       const author = await getAuthorById(meta.author_id);
@@ -131,19 +188,27 @@ async function main(): Promise<void> {
         meta.author = author;
       }
     } catch {
-      // fallback silently
+      // Silent fallback (non-critical feature)
     }
   }
 
+  /**
+   * 🏗️ Project scaffolding
+   */
   const targetPath = createProjectDirectory(projectName);
   const config = loadTemplateConfig(templatePath);
 
   copyTemplateFiles(templatePath, targetPath);
   installDependencies(targetPath, templatePath);
 
+  /**
+   * 🎉 Display success output
+   */
   displaySuccessMessage(projectName, config, meta);
 
-  // TRACK DOWNLOAD
+  /**
+   * 📊 Analytics tracking
+   */
   await sendDownloadEvent(meta, globalVersion);
 
   trackEvent("template_used", {
@@ -157,7 +222,10 @@ async function main(): Promise<void> {
 }
 
 /**
- * Handle CLI flags
+ * ⚙️ Handle CLI Flags
+ *
+ * Currently supports:
+ * --clear-cache → removes all cached templates
  */
 function handleCliFlags(): void {
   if (argv["clear-cache"]) {
@@ -167,7 +235,13 @@ function handleCliFlags(): void {
 }
 
 /**
- * Interactive prompt
+ * 🧭 Interactive Prompt Flow
+ *
+ * Guides user through:
+ * - Language selection
+ * - Framework selection
+ * - Starter/template selection
+ * - Project naming
  */
 async function promptUser(basePath: string): Promise<Answers> {
   const languages = readDir(basePath);
@@ -223,7 +297,10 @@ async function promptUser(basePath: string): Promise<Answers> {
 }
 
 /**
- * Resolve template from full path
+ * 🔍 Resolve Template from Full Path Argument
+ *
+ * Format:
+ * quicksi language/framework/starter app-name
  */
 function resolveTemplateFromArg(
   basePath: string,
@@ -249,7 +326,7 @@ function resolveTemplateFromArg(
 }
 
 /**
- * Resolve template (interactive)
+ * 📁 Resolve Template Path (Interactive Mode)
  */
 function resolveTemplatePath(
   basePath: string,
@@ -268,7 +345,7 @@ function resolveTemplatePath(
 }
 
 /**
- * Load template meta
+ * 📦 Load Template Metadata (.meta.json)
  */
 function loadTemplateMeta(templatePath: string): any {
   const metaPath = path.join(templatePath, ".meta.json");
@@ -283,7 +360,7 @@ function loadTemplateMeta(templatePath: string): any {
 }
 
 /**
- * Create project directory
+ * 📁 Create Project Directory
  */
 function createProjectDirectory(projectName: string): string {
   const target = path.join(process.cwd(), projectName);
@@ -297,7 +374,7 @@ function createProjectDirectory(projectName: string): string {
 }
 
 /**
- * Load template config
+ * ⚙️ Load Template Configuration (.template.json)
  */
 function loadTemplateConfig(templatePath: string): any {
   const configPath = path.join(templatePath, ".template.json");
@@ -308,7 +385,7 @@ function loadTemplateConfig(templatePath: string): any {
 }
 
 /**
- * Copy files
+ * 📄 Copy Template Files (Recursive)
  */
 function copyTemplateFiles(source: string, target: string): void {
   const files = fs.readdirSync(source);
@@ -329,7 +406,9 @@ function copyTemplateFiles(source: string, target: string): void {
 }
 
 /**
- * Install dependencies
+ * 📦 Install Dependencies
+ *
+ * Runs `npm install` if package.json exists
  */
 function installDependencies(
   target: string,
@@ -345,7 +424,7 @@ function installDependencies(
 }
 
 /**
- * Success output
+ * 🎉 Display Success Output
  */
 function displaySuccessMessage(
   projectName: string,
@@ -388,7 +467,7 @@ function displaySuccessMessage(
 }
 
 /**
- * Utilities
+ * 🛠️ Utilities
  */
 function readDir(dir: string): string[] {
   return fs.existsSync(dir) ? fs.readdirSync(dir) : [];
@@ -405,7 +484,7 @@ function throwProjectNameError(): never {
 }
 
 /**
- * Run CLI
+ * ▶️ Run CLI
  */
 main().catch(async (err) => {
   trackEvent("cli_error", { message: err.message });
