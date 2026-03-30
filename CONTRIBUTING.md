@@ -133,7 +133,7 @@ You can contribute improvements to the CLI itself:
 ```bash
 # Fork the repo
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/quicksiCLI
+git clone https://github.com/Quicksi-CLI/quicksiCLI.git
 
 cd quicksiCLI
 
