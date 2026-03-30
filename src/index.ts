@@ -25,6 +25,7 @@
  * - Keep UX simple and intuitive
  * - Support both beginner (interactive) and advanced (CLI args) usage
  */
+console.log("CLI STARTED");
 
 import figlet from "figlet";
 import * as inquirer from "inquirer";
@@ -35,8 +36,8 @@ import chalk from "chalk";
 import yargs from "yargs";
 
 import {
-  ensureTemplates,
   clearTemplateCache,
+  ensureTemplates,
 } from "./utils/templateFetcher";
 
 import {
@@ -45,7 +46,7 @@ import {
 
 import { getAuthorById } from "./utils/getAuthorById";
 
-import { trackEvent, shutdownAnalytics, sendDownloadEvent } from "./utils/analytics";
+// import { sendDownloadEvent } from "./utils/analytics";
 import { getLatestVersion } from "./utils/getLatestVersion";
 
 /**
@@ -99,7 +100,7 @@ function parseTemplateArg(input: string): {
  * 🧠 Main CLI Execution Flow
  */
 async function main(): Promise<void> {
-  trackEvent("cli_started");
+  // trackEvent("cli_started");
 
   handleCliFlags();
 
@@ -109,7 +110,7 @@ async function main(): Promise<void> {
   let templatePath: string;
   let projectName: string;
   let templatesBasePath: string;
-  let globalVersion: string = "main";
+  // let globalVersion: string = "main";
 
   /**
    * ⚡ Non-interactive mode (CLI arguments provided)
@@ -128,7 +129,7 @@ async function main(): Promise<void> {
       versionToUse = await getLatestVersion();
     }
 
-    globalVersion = versionToUse;
+    // globalVersion = versionToUse;
 
     console.log(chalk.gray(`📌 Using version: ${versionToUse}`));
 
@@ -209,14 +210,14 @@ async function main(): Promise<void> {
   /**
    * 📊 Analytics tracking
    */
-  await sendDownloadEvent(meta, globalVersion);
+  // await sendDownloadEvent(meta, globalVersion);
 
-  trackEvent("template_used", {
-    template_id: meta?.id,
-    template_name: meta?.name,
-  });
+  // trackEvent("template_used", {
+  //   template_id: meta?.id,
+  //   template_name: meta?.name,
+  // });
 
-  await shutdownAnalytics();
+  // await shutdownAnalytics();
 
   process.exit(0);
 }
@@ -487,9 +488,9 @@ function throwProjectNameError(): never {
  * ▶️ Run CLI
  */
 main().catch(async (err) => {
-  trackEvent("cli_error", { message: err.message });
+  // trackEvent("cli_error", { message: err.message });
 
-  await shutdownAnalytics();
+  // await shutdownAnalytics();
 
   console.error(chalk.red("\n❌ Error:"), err.message);
 
