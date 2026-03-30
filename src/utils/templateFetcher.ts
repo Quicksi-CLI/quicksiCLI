@@ -51,6 +51,9 @@ const CACHE_BASE_DIR = path.join(os.homedir(), ".quicksi");
 function normalizeVersion(version: string): string {
     if (!version) return version;
 
+    // 🚨 DO NOT prefix main
+    if (version === "main") return version;
+
     return version.startsWith("v") ? version : `v${version}`;
 }
 

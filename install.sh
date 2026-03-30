@@ -11,8 +11,8 @@ echo "🚀 Installing Quicksi CLI..."
 OS="$(uname -s)"
 
 case "$OS" in
-  Linux*)     FILE="quicksi-linux.tar.gz" ;;
-  Darwin*)    FILE="quicksi-macos.tar.gz" ;;
+  Linux*)     FILE="quicksi-linux" ;;
+  Darwin*)    FILE="quicksi-macos" ;;
   *)
     echo "❌ Unsupported OS: $OS"
     exit 1
@@ -21,16 +21,13 @@ esac
 
 DOWNLOAD_URL="https://github.com/$REPO/releases/latest/download/$FILE"
 
-TMP_DIR="/tmp/quicksi-install"
-mkdir -p "$TMP_DIR"
+TMP_FILE="/tmp/$FILE"
 
 echo "⬇️ Downloading..."
-curl -L "$DOWNLOAD_URL" -o "$TMP_DIR/$FILE"
+curl -L "$DOWNLOAD_URL" -o "$TMP_FILE"
 
-echo "📦 Extracting..."
-tar -xzf "$TMP_DIR/$FILE" -C "$TMP_DIR"
-
-chmod +x "$TMP_DIR/quicksi"
+# Make executable
+chmod +x "$TMP_FILE"
 
 # Install location
 INSTALL_DIR="/usr/local/bin"
@@ -42,13 +39,24 @@ if [ ! -w "$INSTALL_DIR" ]; then
   echo "⚠️ No permission for /usr/local/bin"
   echo "📁 Installing to $INSTALL_DIR"
 
+  SHELL_NAME="$(basename "$SHELL")"
+
+  if [[ "$SHELL_NAME" == "zsh" ]]; then
+    PROFILE="$HOME/.zshrc"
+  else
+    PROFILE="$HOME/.bashrc"
+  fi
+
   if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+    echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$PROFILE"
     echo "⚠️ Restart terminal after install"
   fi
+else
+  echo "📁 Installing to /usr/local/bin"
 fi
 
-mv "$TMP_DIR/quicksi" "$INSTALL_DIR/quicksi"
+# Move binary and rename to "quicksi"
+mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
 
 echo ""
 echo "✅ Quicksi installed successfully!"

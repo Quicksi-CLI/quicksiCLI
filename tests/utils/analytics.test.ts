@@ -1,46 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import fs from "fs";
-import os from "os";
-import path from "path";
 
-import {
-  trackEvent,
-  shutdownAnalytics,
-  sendDownloadEvent,
-} from "../../src/utils/analytics";
-
-// 🔥 Mock PostHog
-vi.mock("posthog-node", () => {
-  class MockPostHog {
-    capture = vi.fn();
-    shutdown = vi.fn();
-  }
-
+// ✅ mock https BEFORE import
+vi.mock("https", () => {
   return {
-    PostHog: MockPostHog,
+    request: vi.fn((options, callback) => {
+      const res = {
+        on: (event: string, cb: any) => {
+          if (event === "end") cb();
+        },
+      };
+
+      callback(res);
+
+      return {
+        on: vi.fn(),
+        write: vi.fn(),
+        end: vi.fn(),
+      };
+    }),
   };
 });
 
-// 🔥 Mock fetch
-global.fetch = vi.fn(() =>
-  Promise.resolve({ ok: true })
-) as any;
+import { sendDownloadEvent } from "../../src/utils/analytics";
 
 describe("analytics", () => {
-  const idPath = path.join(os.homedir(), ".quicksi-id");
-
   beforeEach(() => {
-    if (fs.existsSync(idPath)) {
-      fs.rmSync(idPath);
-    }
-  });
-
-  it("trackEvent does not throw", () => {
-    expect(() => trackEvent("test_event")).not.toThrow();
-  });
-
-  it("shutdownAnalytics resolves safely", async () => {
-    await expect(shutdownAnalytics()).resolves.not.toThrow();
+    vi.clearAllMocks();
   });
 
   it("sendDownloadEvent does not throw on success", async () => {
@@ -49,8 +34,19 @@ describe("analytics", () => {
     ).resolves.not.toThrow();
   });
 
-  it("sendDownloadEvent handles fetch failure", async () => {
-    global.fetch = vi.fn(() => Promise.reject("fail")) as any;
+  it("sendDownloadEvent handles request failure", async () => {
+    // override mock to simulate error
+    const https = await import("https");
+
+    (https.request as any).mockImplementation(() => {
+      return {
+        on: (event: string, cb: any) => {
+          if (event === "error") cb(new Error("fail"));
+        },
+        write: vi.fn(),
+        end: vi.fn(),
+      };
+    });
 
     await expect(
       sendDownloadEvent({ id: "test" }, "v1")
