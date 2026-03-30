@@ -24,6 +24,23 @@ import * as os from "os";
 import * as fs from "fs";
 import * as path from "path";
 
+// Polyfills for pkg environment
+import fetch from "node-fetch";
+import { Blob } from "buffer";
+
+
+if (!(global as any).fetch) {
+  // @ts-ignore
+  global.fetch = fetch;
+}
+
+if (!(global as any).Blob) {
+  // @ts-ignore
+  global.Blob = Blob;
+}
+
+const isPkg = typeof (process as any).pkg !== "undefined";
+
 
 /**
  * 📊 PostHog Client Initialization
@@ -48,14 +65,18 @@ import * as path from "path";
  * https://quicksi.io/privacy-policy
  */
 
-const posthog = new PostHog(
-    "phc_tK2blrhbcSCqArlitzGwIYBGsI31oOMQSXXlpVgwjH9",
-    {
-        host: "https://eu.i.posthog.com",
-        flushAt: 1,
-        flushInterval: 0,
-    }
-);
+let posthog: PostHog | null = null;
+
+if (!isPkg) {
+    posthog = new PostHog(
+        "phc_tK2blrhbcSCqArlitzGwIYBGsI31oOMQSXXlpVgwjH9",
+        {
+            host: "https://eu.i.posthog.com",
+            flushAt: 1,
+            flushInterval: 0,
+        }
+    );
+}
 
 /**
  * 📁 Anonymous User ID Storage
@@ -113,7 +134,7 @@ export function trackEvent(
     properties: Record<string, any> = {}
 ) {
     try {
-        posthog.capture({
+        posthog?.capture({
             distinctId: getUserId(),
             event,
             properties: {
@@ -139,7 +160,9 @@ export function trackEvent(
  */
 export async function shutdownAnalytics() {
     try {
-        await posthog.shutdown();
+        if (!isPkg && posthog) {
+            await posthog.shutdown();
+        }
     } catch {
         // Silent failure — do not interrupt CLI lifecycle
     }
@@ -184,13 +207,8 @@ export async function sendDownloadEvent(meta: any, globalVersion: string) {
                 resource_type: meta?.resource_type || "",
             }),
         });
-    } catch (err) {
-        // Log error for debugging, but do not interrupt user flow
-        if (err instanceof Error) {
-            console.error(err.message);
-        } else {
-            console.error("Unknown error", err);
-        }
+    } catch {
+        // silent fail (no console noise in CLI)
     }
-};
+}
 
