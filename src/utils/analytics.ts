@@ -29,11 +29,15 @@ import fetch from "node-fetch";
 import { Blob } from "buffer";
 
 
-// @ts-ignore
-global.fetch = fetch;
+if (!(global as any).fetch) {
+  // @ts-ignore
+  global.fetch = fetch;
+}
 
-// @ts-ignore
-global.Blob = Blob;
+if (!(global as any).Blob) {
+  // @ts-ignore
+  global.Blob = Blob;
+}
 
 const isPkg = typeof (process as any).pkg !== "undefined";
 
