@@ -20,13 +20,20 @@
     "module": "commonjs",
     "strict": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
+  "include": [
+    "src"
+  ],
   "exclude": [
     "node_modules",
     "dist",
     "templates",
     "documentation",
-    "docs"
+    "docs",
+    "vitest.config.ts",
+    "tests"
   ],
 }
