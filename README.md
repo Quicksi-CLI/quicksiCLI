@@ -14,9 +14,9 @@
   <a href="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/test.yml">
     <img src="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/test.yml/badge.svg">
   </a>
-  <a href="https://www.npmjs.com/package/quicksi">
-    <img src="https://img.shields.io/npm/v/quicksi">
-  </a>
+<a href="https://www.npmjs.com/package/quicksi">
+  <img src="https://img.shields.io/npm/v/quicksi?label=npm%20(legacy)&color=lightgrey">
+</a>
   <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/Quicksi-CLI/quicksiCLI">
   </a>
