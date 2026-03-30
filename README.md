@@ -1,66 +1,98 @@
-# QUICKSI
+<p align="center">
+  <a href="https://quicksi.io/" title="Quicksi Docs">
+    <img src="documentation/images/quicksi-logo.png" alt="Project Quicksi Logo" width="244" />
+  </a>
+</p>
 
-##### Transferred from a personal GitHub account to an organization GitHub account.
+<p align="center">
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/build.yml">
+    <img src="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/build.yml/badge.svg">
+  </a>
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/check.yml">
+    <img src="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/check.yml/badge.svg">
+  </a>
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/test.yml">
+    <img src="https://github.com/Quicksi-CLI/quicksiCLI/actions/workflows/test.yml/badge.svg">
+  </a>
+  <a href="https://www.npmjs.com/package/quicksi">
+    <img src="https://img.shields.io/npm/v/quicksi">
+  </a>
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/Quicksi-CLI/quicksiCLI">
+  </a>
+  <br>
+</p>
 
-[View documentation here](https://quicksi-bot.now.sh/)
+<p align="center">
+  Cross-platform CLI for reusable, versioned project starters.
+</p>
 
-[View NPM package](https://www.npmjs.com/package/quicksi)
+---
 
-##### Previous Hits on a personal account
-[![HitCount](http://hits.dwyl.com/AnayoOleru/quicksi.svg)](http://hits.dwyl.com/AnayoOleru/quicksi)
+## 🚀 What is Quicksi?
 
+**Quicksi is a cross-platform CLI tool that provides reusable, versioned project starters across languages, frameworks, and libraries—enabling developers to instantly scaffold projects without worrying about setup, configuration, or boilerplate.**
 
-[![npm version](https://img.shields.io/npm/v/quicksi.svg?style=flat-square)](https://www.npmjs.org/package/quicksi)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/AnayoOleru/quicksi/issues)
-[![npm downloads](https://img.shields.io/npm/dm/quicksi.svg?style=flat-square)](http://npm-stat.com/charts.html?package=quicksi)
+Instead of spending time setting up projects from scratch, Quicksi gives you a **structured, ready-to-use foundation** so you can focus on building.
 
+---
 
-Quicksi is a command line tool with reuseable starters in different languages, frameworks and libraries designed to make it easy for developers to start projects without having to worry about the setup.
+## ⚡ Installation
 
-### Goal of Quicksi
-
-Getting a new project up and running can be time consuming and demotivating when what you really want is to just work on your idea. It can take hours/days to get through all the boilerplate before you can get to any actual work.
-
-The goal of Quicksi is to give you a strong, modern project with just a few commands so you can begin writing your application from the start and not worry about the boilerplate or the whole starting process.
-
-## Quick start
-To get the latest version of quick
-
-
-```
-npx quicksi
-```
-
-
-> If you've previously installed quicksi globally via npm install -g quicksi, we recommend you uninstall the package using npm uninstall -g quicksi to ensure that npx always uses the latest version. Or see the other installations below if you want to install globally.
-
-
-## Install globally
-To install `quicksi` on your local machine, run:
-
-```
-npm i -g quicksi
-```
-or
-
-```
-yarn global add quicksi
+### Using install script (Linux / macOS)
+```bash
+curl -fsSL https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/install.sh | bash
 ```
 
-<br/>
-Installing quicksi globally gives you access to one command alone:
-
-```
-quicksi
+### Using install script - Windows (PowerShell)
+```bash
+iwr https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/install.ps1 -useb | iex
 ```
 
-<br/>
-But you'll have to check for new versions of quicksi and update the package.
+### Using npm (No Longer Supported)
 
+```bash
+npm install -g quicksi
 ```
-npm update -g quicksi
+
+## ⚡ Usage
+After installing through the script, run:
+
+```bash
+quicksi <template> <project-name>
 ```
+You can search and find project templates on the [Quicksi Website](https://quicksi.io)
+
+## Building & Documentation
+
+> [!NOTE]
+> The default `master` branch is the main branch, please use with caution.
+
+For complete instructions on how to build, install and setup Quicksi, please visit [https://quicksi.io](https://quicksi.io/documentation). Basic build instructions can be found further down in this readme.
+
+## Reporting a Vulnerability
+
+Please raise an issue on [Quicksi Github issue](https://github.com/Quicksi-CLI/quicksiCLI/issues) or send an email to quicksidotio@gmail.com. See our [security policy](SECURITY.md) for more details.
+
+## Contributing
+
+We welcome contributions to Quicksi! Please see our [Contributing Guide](CONTRIBUTING.md) for more details on how to get started.
+
+
+## Quicksi vs AI (Copilot)
+AI generates code. Quicksi generates foundation.
+
+| Feature                   | AI / Copilot    | Quicksi |
+| ------------------------- | --------------- | ------- |
+| Writes code               | ✅               | ❌       |
+| Creates project structure | ❌               | ✅       |
+| Ensures best practices    | ⚠️ inconsistent | ✅       |
+| Reusability               | ❌               | ✅       |
+| Team standardization      | ❌               | ✅       |
+| Speed (setup)             | ❌               | ✅       |
+| Speed (coding)            | ✅               | ❌       |
 
 
 ## Creator
-[Anayo Samson Oleru](https://www.linkedin.com/in/anayooleru/)
+[Anayo Samson Oleru](https://github.com/AnayoOleru)
+
