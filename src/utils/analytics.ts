@@ -82,3 +82,30 @@ export async function shutdownAnalytics() {
         await posthog.shutdown();
     } catch { }
 }
+
+// quicksi-specific event for tracking template downloads
+// find out why and how we collect this data in quicksi.io/privacy-policy
+export async function sendDownloadEvent(meta: any, globalVersion: string) {
+    try {
+        await fetch("https://quicksi-server-7dcf88aff3f2.herokuapp.com/api/v1/downloads", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                template_id: meta?.id,
+                version: globalVersion,
+                author: meta?.author_id,
+                programming_lang: meta?.programming_lang || "",
+                resource_type: meta?.resource_type || "",
+            }),
+        });
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error(err.message);
+        } else {
+            console.error("Unknown error", err);
+        }
+    }
+};
+

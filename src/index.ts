@@ -17,7 +17,10 @@ import {
   resolveTemplateById,
 } from "./utils/templateIndex";
 
-import { trackEvent, shutdownAnalytics } from "./utils/analytics";
+import { getAuthorById } from "./utils/getAuthorById";
+
+import { trackEvent, shutdownAnalytics, sendDownloadEvent } from "./utils/analytics";
+import { getLatestVersion } from "./utils/getLatestVersion";
 
 /**
  * CLI Arguments
@@ -66,11 +69,23 @@ async function main(): Promise<void> {
   let templatePath: string;
   let projectName: string;
   let templatesBasePath: string;
+  let globalVersion: string = "main";
 
   if (templateArg) {
     const parsed = parseTemplateArg(templateArg);
 
-    templatesBasePath = await ensureTemplates(parsed.version);
+    // 🔥 VERSION RESOLUTION (NEW)
+    let versionToUse = parsed.version;
+
+    if (!versionToUse) {
+      versionToUse = await getLatestVersion();
+    };
+
+    globalVersion = versionToUse
+
+    console.log(chalk.gray(`📌 Using version: ${versionToUse}`));
+
+    templatesBasePath = await ensureTemplates(versionToUse);
 
     if (parsed.template.includes("/")) {
       templatePath = resolveTemplateFromArg(
@@ -86,7 +101,13 @@ async function main(): Promise<void> {
 
     projectName = nameArg || throwProjectNameError();
   } else {
-    templatesBasePath = await ensureTemplates();
+
+    // 🔥 also apply VERSION logic here
+    const versionToUse = await getLatestVersion();
+
+    console.log(chalk.gray(`📌 Using version: ${versionToUse}`));
+
+    templatesBasePath = await ensureTemplates(versionToUse);
 
     const answers = await promptUser(templatesBasePath);
 
@@ -98,7 +119,21 @@ async function main(): Promise<void> {
     projectName = answers.name;
   }
 
+  // const meta = loadTemplateMeta(templatePath);
   const meta = loadTemplateMeta(templatePath);
+
+  // 🔥 ENRICH AUTHOR FROM author_id
+  if (meta?.author_id) {
+    try {
+      const author = await getAuthorById(meta.author_id);
+
+      if (author) {
+        meta.author = author;
+      }
+    } catch {
+      // fallback silently
+    }
+  }
 
   const targetPath = createProjectDirectory(projectName);
   const config = loadTemplateConfig(templatePath);
@@ -107,6 +142,9 @@ async function main(): Promise<void> {
   installDependencies(targetPath, templatePath);
 
   displaySuccessMessage(projectName, config, meta);
+
+  // TRACK DOWNLOAD
+  await sendDownloadEvent(meta, globalVersion);
 
   trackEvent("template_used", {
     template_id: meta?.id,
@@ -363,7 +401,7 @@ function validateProjectName(input: string): true | string {
 }
 
 function throwProjectNameError(): never {
-  throw new Error("Project name is required");
+  throw new Error("Project name is required e.g quicksi <resource-name> <custome-project-name>");
 }
 
 /**

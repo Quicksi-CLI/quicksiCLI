@@ -11,22 +11,28 @@ const TEMPLATE_REPO = "https://github.com/Quicksi-CLI/quicksi-templates";
 const DEFAULT_BRANCH = "main";
 const CACHE_BASE_DIR = path.join(os.homedir(), ".quicksi");
 
+function normalizeVersion(version: string): string {
+    if (!version) return version;
+
+    return version.startsWith("v") ? version : `v${version}`;
+}
+
 /**
  * Build template download URL
  */
 function buildTemplateUrl(version?: string): string {
-    return version
-        ? `${TEMPLATE_REPO}/archive/refs/tags/${version}.zip`
-        : `${TEMPLATE_REPO}/archive/refs/heads/${DEFAULT_BRANCH}.zip`;
+    if (!version || version === "main") {
+        return `${TEMPLATE_REPO}/archive/refs/heads/${DEFAULT_BRANCH}.zip`;
+    }
+
+    return `${TEMPLATE_REPO}/archive/refs/tags/${version}.zip`;
 }
 
 /**
  * Get version-specific cache directory
  */
-function getCacheDir(version?: string): string {
-    return version
-        ? path.join(CACHE_BASE_DIR, version)
-        : path.join(CACHE_BASE_DIR, "latest");
+function getCacheDir(version: string): string {
+    return path.join(CACHE_BASE_DIR, version);
 }
 
 /**
@@ -35,7 +41,11 @@ function getCacheDir(version?: string): string {
 async function download(url: string): Promise<Buffer> {
     return new Promise((resolve, reject) => {
         https
-            .get(url, (res) => {
+            .get(url, {
+                headers: {
+                    "User-Agent": "quicksi-cli",
+                },
+            }, (res) => {
                 if (
                     res.statusCode &&
                     res.statusCode >= 300 &&
@@ -64,8 +74,12 @@ async function download(url: string): Promise<Buffer> {
 /**
  * Ensure templates exist locally (version-aware)
  */
-export async function ensureTemplates(version?: string): Promise<string> {
-    const cacheDir = getCacheDir(version);
+export async function ensureTemplates(version: string): Promise<string> {
+    const normalizedVersion = normalizeVersion(version);
+    console.log("Version:", normalizedVersion);
+    console.log("URL:", buildTemplateUrl(normalizedVersion));
+
+    const cacheDir = getCacheDir(normalizedVersion);
 
     // ✅ Use cache if valid
     if (fs.existsSync(cacheDir)) {
@@ -79,7 +93,7 @@ export async function ensureTemplates(version?: string): Promise<string> {
     console.log("📦 Downloading templates...");
 
     try {
-        const url = buildTemplateUrl(version);
+        const url = buildTemplateUrl(normalizedVersion);
         const buffer = await download(url);
 
         validateDownloadedFile(buffer);
@@ -90,8 +104,9 @@ export async function ensureTemplates(version?: string): Promise<string> {
         console.log("✅ Templates ready");
 
         return resolveTemplatesPath(cacheDir);
-    } catch (error) {
+    } catch (error: any) {
         console.error("❌ Failed to download templates");
+        console.error("ERROR:", error.message);
         throw error;
     }
 }
@@ -100,10 +115,8 @@ export async function ensureTemplates(version?: string): Promise<string> {
  * Validate downloaded content
  */
 function validateDownloadedFile(buffer: Buffer): void {
-    if (buffer.length < 1000) {
-        throw new Error(
-            "Downloaded file is invalid (too small). Possible network or repo issue."
-        );
+    if (!buffer || buffer.length === 0) {
+        throw new Error("Downloaded file is empty");
     }
 }
 

@@ -1,5 +1,19 @@
 # QUICKSI
 
+Installation for Macos and Linux
+curl -fsSL https://quicksi.io/install.sh | bash
+
+curl -fsSL https://raw.githubusercontent.com/Quicksi-CLI/quicksi/main/install.sh | bash
+
+what this build will do:
+Detect OS	Linux / macOS
+Build URL	downloads correct binary
+Download	from GitHub releases
+chmod	make executable
+Install	/usr/local/bin or fallback
+Rename	→ quicksi
+PATH fix	if needed
+
 ##### Transferred from a personal GitHub account to an organization GitHub account.
 
 [View documentation here](https://quicksi-bot.now.sh/)
