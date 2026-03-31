@@ -25,7 +25,6 @@
  * - Keep UX simple and intuitive
  * - Support both beginner (interactive) and advanced (CLI args) usage
  */
-console.log("CLI STARTED");
 
 import figlet from "figlet";
 import * as inquirer from "inquirer";
@@ -46,7 +45,7 @@ import {
 
 import { getAuthorById } from "./utils/getAuthorById";
 
-// import { sendDownloadEvent } from "./utils/analytics";
+import { sendDownloadEvent } from "./utils/analytics";
 import { getLatestVersion } from "./utils/getLatestVersion";
 
 /**
@@ -100,7 +99,6 @@ function parseTemplateArg(input: string): {
  * 🧠 Main CLI Execution Flow
  */
 async function main(): Promise<void> {
-  // trackEvent("cli_started");
 
   handleCliFlags();
 
@@ -110,7 +108,7 @@ async function main(): Promise<void> {
   let templatePath: string;
   let projectName: string;
   let templatesBasePath: string;
-  // let globalVersion: string = "main";
+  let globalVersion: string = "main";
 
   /**
    * ⚡ Non-interactive mode (CLI arguments provided)
@@ -129,7 +127,7 @@ async function main(): Promise<void> {
       versionToUse = await getLatestVersion();
     }
 
-    // globalVersion = versionToUse;
+    globalVersion = versionToUse;
 
     console.log(chalk.gray(`📌 Using version: ${versionToUse}`));
 
@@ -210,16 +208,12 @@ async function main(): Promise<void> {
   /**
    * 📊 Analytics tracking
    */
-  // await sendDownloadEvent(meta, globalVersion);
-
-  // trackEvent("template_used", {
-  //   template_id: meta?.id,
-  //   template_name: meta?.name,
-  // });
-
-  // await shutdownAnalytics();
-
-  process.exit(0);
+  if (meta?.id) {
+    await Promise.race([
+      sendDownloadEvent(meta, globalVersion),
+      new Promise((r) => setTimeout(r, 500)),
+    ]);
+  }
 }
 
 /**
@@ -231,7 +225,7 @@ async function main(): Promise<void> {
 function handleCliFlags(): void {
   if (argv["clear-cache"]) {
     clearTemplateCache();
-    process.exit(0);
+    return;
   }
 }
 
@@ -488,10 +482,6 @@ function throwProjectNameError(): never {
  * ▶️ Run CLI
  */
 main().catch(async (err) => {
-  // trackEvent("cli_error", { message: err.message });
-
-  // await shutdownAnalytics();
-
   console.error(chalk.red("\n❌ Error:"), err.message);
 
   process.exit(1);

@@ -17,8 +17,23 @@
 <a href="https://www.npmjs.com/package/quicksi">
   <img src="https://img.shields.io/npm/v/quicksi?label=npm%20(legacy)&color=lightgrey">
 </a>
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/main/LICENSE">
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/Quicksi-CLI/quicksiCLI">
+  </a>
+   <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/downloads.json" alt="Downloads">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/linux.json" alt="Linux Downloads">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/macos.json" alt="macOS Downloads">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/windows.json" alt="Windows Downloads">
   </a>
   <br>
 </p>
@@ -41,12 +56,12 @@ Instead of spending time setting up projects from scratch, Quicksi gives you a *
 
 ### Using install script (Linux / macOS)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/install.sh | bash
 ```
 
 ### Using install script - Windows (PowerShell)
 ```bash
-iwr https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/install.ps1 -useb | iex
+iwr https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/install.ps1 -useb | iex
 ```
 
 ### Using npm (No Longer Supported)
@@ -66,7 +81,7 @@ You can search and find project templates on the [Quicksi Website](https://quick
 ## Building & Documentation
 
 > [!NOTE]
-> The default `master` branch is the main branch, please use with caution.
+> The default `master` branch is the master branch, please use with caution.
 
 For complete instructions on how to build, install and setup Quicksi, please visit [https://quicksi.io](https://quicksi.io/documentation). Basic build instructions can be found further down in this readme.
 
