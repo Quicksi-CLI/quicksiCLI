@@ -1,5 +1,7 @@
 import fetch from "node-fetch";
 
+let cachedVersion: string | null = null;
+
 /**
  * 🔄 Fetch Latest Template Version
  *
@@ -29,7 +31,10 @@ import fetch from "node-fetch";
  *
  * @returns Promise resolving to version string (or "main" fallback)
  */
+
 export async function getLatestVersion(): Promise<string> {
+  if (cachedVersion) return cachedVersion;
+
   try {
     const res = await fetch(
       "https://raw.githubusercontent.com/Quicksi-CLI/quicksi-templates/main/VERSION"
@@ -56,6 +61,8 @@ export async function getLatestVersion(): Promise<string> {
       throw new Error("Empty VERSION file");
     }
 
+    cachedVersion = version;
+
     return version;
   } catch (err) {
     /**
@@ -70,3 +77,6 @@ export async function getLatestVersion(): Promise<string> {
   }
 };
 
+export function __resetVersionCache() {
+  cachedVersion = null;
+}
