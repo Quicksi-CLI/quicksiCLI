@@ -20,22 +20,6 @@
   <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/Quicksi-CLI/quicksiCLI">
   </a>
-   <a href="https://github.com/Quicksi-CLI/quicksiCLI">
-    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/downloads.json" alt="Downloads">
-  </a>
-
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
-    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/linux.json" alt="Linux Downloads">
-  </a>
-
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
-    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/macos.json" alt="macOS Downloads">
-  </a>
-
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
-    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/stats/windows.json" alt="Windows Downloads">
-  </a>
-  <br>
 </p>
 
 <p align="center">
