@@ -1,0 +1,26 @@
+name: Update Download Stats
+
+on:
+  schedule:
+    - cron: "0 * * * *" # every hour
+  workflow_dispatch:
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run script
+        run: node scripts/download-stats.js
+
+      - name: Commit stats
+        run: |
+          git config user.name "quicksi-bot"
+          git config user.email "bot@quicksi.dev"
+
+          git add stats/downloads.json
+          git diff --cached --quiet || git commit -m "chore: update download stats"
+          git push
+          

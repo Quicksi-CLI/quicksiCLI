@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 /**
  * 🔄 Fetch Latest Template Version
  *
@@ -62,6 +64,7 @@ export async function getLatestVersion(): Promise<string> {
      * If anything goes wrong (network issue, invalid response, etc.),
      * default to "main" to ensure the CLI continues functioning.
      */
+    console.error("❌ VERSION fetch error:", err);
     console.log("⚠️ Failed to fetch VERSION, falling back to main");
     return "main";
   }

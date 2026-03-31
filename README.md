@@ -20,8 +20,25 @@
   <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/Quicksi-CLI/quicksiCLI">
   </a>
+   <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/stats/downloads.json" alt="Downloads">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/stats/linux.json" alt="Linux Downloads">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/stats/macos.json" alt="macOS Downloads">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/stats/windows.json" alt="Windows Downloads">
+  </a>
   <br>
 </p>
+
+![Downloads](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/main/stats/downloads.json)
 
 <p align="center">
   Cross-platform CLI for reusable, versioned project starters.
