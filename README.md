@@ -39,6 +39,24 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
+    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/total" alt="Total Downloads">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
+    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/latest/quicksi-linux-x64" alt="Linux">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
+    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/latest/quicksi-macos-arm64" alt="macOS">
+  </a>
+
+  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
+    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/latest/quicksi-windows-x64.exe" alt="Windows">
+  </a>
+</p>
+
+<p align="center">
   Cross-platform CLI for reusable, versioned project starters.
 </p>
 
