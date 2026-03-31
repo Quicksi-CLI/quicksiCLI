@@ -1,29 +1,35 @@
 $repo = "Quicksi-CLI/quicksiCLI"
 $url = "https://github.com/$repo/releases/latest/download/quicksi-win.exe"
 
-$output = "$env:USERPROFILE\quicksi.exe"
+$installDir = "$env:LOCALAPPDATA\Quicksi"
+$output = "$installDir\quicksi.exe"
 
-Write-Host "Downloading Quicksi..."
+Write-Host "Installing Quicksi..."
+
+New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 
 Invoke-RestMethod -Uri $url -OutFile $output
 
-Write-Host "Installed at $output"
-Write-Host ""
+Write-Host "Installed to $output"
 
-# Optional: Add to PATH (user-level)
+# Add to PATH if needed
 $path = [Environment]::GetEnvironmentVariable("Path", "User")
 
-if ($path -notlike "*$env:USERPROFILE*") {
+if ($path -notlike "*$installDir*") {
     Write-Host "Adding Quicksi to PATH..."
+
     [Environment]::SetEnvironmentVariable(
         "Path",
-        "$path;$env:USERPROFILE",
+        "$path;$installDir",
         "User"
     )
-    Write-Host "PATH updated. Restart your terminal to use 'quicksi'."
+
+    Write-Host "PATH updated."
 } else {
-    Write-Host "Quicksi is already in PATH."
+    Write-Host "Already in PATH."
 }
 
 Write-Host ""
-Write-Host "You can now run: quicksi"
+Write-Host "⚠️ Restart your terminal to use 'quicksi'"
+Write-Host "Or run this command now:"
+Write-Host "  `$env:Path += ';$installDir'"

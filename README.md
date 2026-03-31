@@ -48,7 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/insta
 
 ### Using install script - Windows (PowerShell)
 ```bash
-iwr https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/install.ps1 -useb | iex
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/Quicksi-CLI/quicksiCLI/master/install.ps1 | iex"
 ```
 
 ### Using npm (No Longer Supported)
