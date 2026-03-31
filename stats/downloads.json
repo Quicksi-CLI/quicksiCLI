@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "label": "downloads",
+  "message": "3",
+  "color": "blue",
+  "linux": 0,
+  "macos": 1,
+  "windows": 2
+}
