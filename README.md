@@ -20,23 +20,8 @@
   <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/Quicksi-CLI/quicksiCLI">
   </a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
+    <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
     <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/total" alt="Total Downloads">
-  </a>
-
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
-    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/latest/quicksi-linux-x64" alt="Linux">
-  </a>
-
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
-    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/latest/quicksi-macos-arm64" alt="macOS">
-  </a>
-
-  <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
-    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/latest/quicksi-windows-x64.exe" alt="Windows">
   </a>
 </p>
 
