@@ -19,10 +19,6 @@
 </a>
   <a href="https://github.com/Quicksi-CLI/quicksiCLI/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/Quicksi-CLI/quicksiCLI">
-  </a>
-    <a href="https://github.com/Quicksi-CLI/quicksiCLI/releases">
-    <img src="https://img.shields.io/github/downloads/Quicksi-CLI/quicksiCLI/total" alt="Total Downloads">
-  </a>
 </p>
 
 <p align="center">
